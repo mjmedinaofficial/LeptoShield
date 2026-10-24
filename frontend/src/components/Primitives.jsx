@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 
 import { classNames, clockParts, scorePercent, statusTheme, tierTheme, waitLabel } from '../lib/format';
+import { useLanguage } from './LanguageToggle';
 
 export function TierIcon({ tier, className = 'h-4 w-4' }) {
   if (tier === 'high') return <AlertTriangle className={className} aria-hidden="true" />;
@@ -18,7 +19,8 @@ export function TierIcon({ tier, className = 'h-4 w-4' }) {
 }
 
 export function TierBadge({ tier, size = 'md', withIcon = true, className = '' }) {
-  const theme = tierTheme(tier);
+  const { language } = useLanguage();
+  const theme = tierTheme(tier, language);
   const sizes = {
     sm: 'px-2 py-0.5 text-2xs',
     md: 'px-2.5 py-1 text-xs',
@@ -40,7 +42,8 @@ export function TierBadge({ tier, size = 'md', withIcon = true, className = '' }
 }
 
 export function StatusPill({ status, className = '' }) {
-  const theme = statusTheme(status);
+  const { language } = useLanguage();
+  const theme = statusTheme(status, language);
   return (
     <span
       className={classNames(
@@ -123,12 +126,14 @@ const LIVE_STATES = {
   offline: { dot: 'bg-clay', label: 'Offline', tone: 'text-clay-deep' },
 };
 
-export function LiveIndicator({ status = 'connecting', className = '', showLabel = true }) {
+export function LiveIndicator({ status = 'connecting', className = '', showLabel = true, labelClassName = '' }) {
   const state = LIVE_STATES[status] || LIVE_STATES.connecting;
   return (
     <span className={classNames('inline-flex items-center gap-2 text-2xs font-semibold', className)} aria-live="polite">
       <span className={classNames('h-2 w-2 rounded-full', state.dot)} />
-      {showLabel && <span className={classNames('uppercase tracking-[0.14em]', state.tone)}>{state.label}</span>}
+      {showLabel && (
+        <span className={classNames('uppercase tracking-[0.14em]', state.tone, labelClassName)}>{state.label}</span>
+      )}
     </span>
   );
 }

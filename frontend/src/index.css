@@ -147,6 +147,11 @@
     @apply btn border border-ink-line bg-surface text-ink hover:border-teal/40 hover:bg-teal-mist active:translate-y-px;
   }
 
+  .btn-muted {
+    @apply btn border border-ink-line text-ink-mute;
+    background-color: rgba(27, 42, 39, 0.06);
+  }
+
   .btn-ghost {
     @apply btn text-ink-soft hover:bg-ink/[0.05] hover:text-ink;
   }

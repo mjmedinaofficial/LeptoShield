@@ -146,7 +146,12 @@ goto doctor_node_done
 :doctor_node_missing
 echo     [--] Node.js 18+ is missing and will be installed on next run
 :doctor_node_done
+set "VENV_OK=0"
 if exist "%VPY%" (
+  "%VPY%" -c "import sys" >nul 2>&1
+  if not errorlevel 1 set "VENV_OK=1"
+)
+if "%VENV_OK%"=="1" (
   echo     [ok] Python packages: backend\.venv
 ) else (
   echo     [--] Python packages: not installed yet
@@ -356,6 +361,14 @@ del "%NODEMSI%" >nul 2>&1
 exit /b 0
 
 :ensure_py_deps
+if exist "%VPY%" (
+  "%VPY%" -c "import sys" >nul 2>&1
+  if errorlevel 1 (
+    echo   [!] Existing backend\.venv is invalid or from another machine.
+    echo       Recreating backend\.venv...
+    rmdir /s /q "%VENV%" >nul 2>&1
+  )
+)
 if not exist "%VPY%" (
   echo   [..] Creating the Python environment - backend\.venv...
   "%PYEXE%" -m venv "%VENV%"

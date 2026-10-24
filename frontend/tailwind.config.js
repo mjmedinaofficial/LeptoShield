@@ -89,6 +89,10 @@ export default {
           from: { transform: 'scaleX(0)' },
           to: { transform: 'scaleX(1)' },
         },
+        shrink: {
+          from: { transform: 'scaleX(1)' },
+          to: { transform: 'scaleX(0)' },
+        },
         pop: {
           '0%': { transform: 'scale(.95)', opacity: '.4' },
           '60%': { transform: 'scale(1.015)', opacity: '1' },
@@ -115,6 +119,7 @@ export default {
         rise: 'rise .5s cubic-bezier(.16,1,.3,1) both',
         fade: 'fade .4s ease-out both',
         fill: 'fill .7s cubic-bezier(.16,1,.3,1) both',
+        shrink: 'shrink 15s linear forwards',
         pop: 'pop .45s cubic-bezier(.16,1,.3,1) both',
         breathe: 'breathe 2.6s ease-in-out infinite',
         bob: 'bob 3.2s ease-in-out infinite',

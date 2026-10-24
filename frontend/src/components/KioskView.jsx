@@ -3,28 +3,25 @@ import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   ArrowRight,
-  Clock3,
-  Globe2,
-  Languages,
   MonitorSmartphone,
   QrCode,
   ShieldCheck,
   Siren,
-  Stethoscope,
+  Tv,
   UserRound,
 } from 'lucide-react';
 
 import { Brand } from './Brand';
-import { LiveIndicator, ManilaClock, TierBadge } from './Primitives';
+import { LanguageToggle, useLanguage } from './LanguageToggle';
+import { NavMenu } from './NavMenu';
+import { LiveIndicator, ManilaClock } from './Primitives';
 import { useLiveQueue } from '../hooks/useLiveQueue';
-import { classNames, tierTheme, waitLabel } from '../lib/format';
 
 const COPY = {
   en: {
     headline: 'Know your risk. Get the right care, faster.',
     sub: 'A three-minute check for leptospirosis risk after flood exposure. No blood test. No guessing which line to stand in.',
     cta: 'Start the 3-minute check',
-    alt: 'Prefer this screen? Tap to begin here',
     steps: [
       'Answer four short screens about the water and how you feel.',
       'Receive a colour-coded priority token with the reasons behind it.',
@@ -33,23 +30,17 @@ const COPY = {
     qrTitle: 'Use your own phone',
     qrHint: 'Scan to start on your phone. Your answers stay at this clinic.',
     sessionLabel: 'Station code',
-    queueTitle: 'Lobby right now',
-    waiting: 'waiting',
-    highRisk: 'high risk',
-    counters: 'Counters',
-    nextUp: 'High-risk patients are seen first at Counter 1.',
-    staff: 'Staff access',
-    fastTrackOpen: 'Fast-track open',
-    fastTrackIdle: 'Fast-track ready',
+    lobbyTitle: 'Waiting-room board',
+    lobbyBody: 'See which counter is being called and how many patients are waiting.',
+    lobbyCta: 'Open the waiting-room board',
     privacy: 'You can stay anonymous. No name is required to be assessed.',
     languages: 'English',
     languagesAlt: 'Need help? Ask any clinic staff member. Filipino assistance is available.',
   },
   fil: {
-    headline: 'Alamin ang panganib. Matanggap ang tamang lunas, mas mabilis.',
+    headline: 'Alamin ang panganib. Makatanggap ng mabilisang lunas.',
     sub: 'Tatlong minutong pagsusuri para sa leptospirosis pagkatapos ng baha. Walang blood test. Hindi na kailangang hulaan kung saan pipila.',
     cta: 'Simulan ang 3-minutong pagsusuri',
-    alt: 'Gamitin ang screen na ito? Pindutin upang magsimula',
     steps: [
       'Sagutin ang apat na maikling tanong tungkol sa tubig at pakiramdam mo.',
       'Tumanggap ng priority token na may paliwanag sa bawat puntos.',
@@ -58,14 +49,9 @@ const COPY = {
     qrTitle: 'Gamitin ang iyong telepono',
     qrHint: 'I-scan upang magsimula sa telepono. Mananatili sa klinika ang mga sagot.',
     sessionLabel: 'Station code',
-    queueTitle: 'Kasalukuyan sa lobby',
-    waiting: 'naghihintay',
-    highRisk: 'mataas ang panganib',
-    counters: 'Mga counter',
-    nextUp: 'Ang mataas ang panganib ay inuuna sa Counter 1.',
-    staff: 'Para sa staff',
-    fastTrackOpen: 'Bukas ang fast-track',
-    fastTrackIdle: 'Nakahanda ang fast-track',
+    lobbyTitle: 'Waiting-room board',
+    lobbyBody: 'Tingnan kung anong counter ang tinawag at ilan ang naghihintay.',
+    lobbyCta: 'Buksan ang waiting-room board',
     privacy: 'Maaari kang manatiling anonymous. Hindi kailangan ang pangalan.',
     languages: 'Filipino',
     languagesAlt: 'Kailangan ng tulong? Tanungin ang staff ng klinika.',
@@ -90,17 +76,12 @@ function useRotatingCode(seconds = 45) {
 
 export default function KioskView() {
   const { snapshot, status } = useLiveQueue({ pollMs: 12000 });
-  const [language, setLanguage] = useState('en');
+  const { language } = useLanguage();
   const copy = COPY[language];
   const sessionCode = useRotatingCode(45);
 
-  const waiting = snapshot?.waiting ?? [];
-  const counters = snapshot?.counters ?? [];
-  const stats = snapshot?.stats;
   const alerts = snapshot?.alerts ?? [];
   const breach = alerts.find((alert) => alert.id === 'ncr-epidemic');
-  const sampleTicket = waiting.find((ticket) => ticket.tier === 'high');
-  const fastTrackCounter = counters.find((counter) => counter.id === 1);
 
   const intakeUrl = useMemo(() => {
     const origin = typeof window === 'undefined' ? 'http://localhost:5173' : window.location.origin;
@@ -111,32 +92,13 @@ export default function KioskView() {
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-paper">
       <div className="topo pointer-events-none absolute inset-0 opacity-60" aria-hidden="true" />
 
-      <header className="relative z-10 mx-auto flex w-full max-w-[1560px] flex-wrap items-center gap-4 px-5 py-4 sm:px-8">
+      <header className="relative z-30 mx-auto flex w-full max-w-[1560px] flex-wrap items-center gap-4 px-5 py-4 sm:px-8">
         <Brand subtitle="Lobby kiosk 01 · Manila Health Center" />
         <div className="ml-auto flex items-center gap-3">
           <LiveIndicator status={status} />
           <ManilaClock className="hidden text-sm sm:inline-flex" />
-          <div
-            className="inline-flex overflow-hidden rounded-xl border border-ink-line bg-surface"
-            role="group"
-            aria-label="Language"
-          >
-            {['en', 'fil'].map((code) => (
-              <button
-                key={code}
-                type="button"
-                onClick={() => setLanguage(code)}
-                aria-pressed={language === code}
-                className={classNames(
-                  'inline-flex min-h-[40px] items-center gap-1.5 px-3 text-xs font-semibold transition-colors',
-                  language === code ? 'bg-teal text-white' : 'text-ink-soft hover:bg-ink/[0.05]',
-                )}
-              >
-                {code === 'en' ? <Globe2 className="h-3.5 w-3.5" aria-hidden="true" /> : <Languages className="h-3.5 w-3.5" aria-hidden="true" />}
-                {code === 'en' ? 'EN' : 'FIL'}
-              </button>
-            ))}
-          </div>
+          <LanguageToggle />
+          <NavMenu />
         </div>
       </header>
 
@@ -162,7 +124,7 @@ export default function KioskView() {
             {copy.sub}
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-8">
             <Link
               to={`/triage?src=kiosk&station=LOBBY01&s=${sessionCode}`}
               className="btn-primary h-16 w-full justify-between px-6 text-base sm:w-auto sm:justify-center sm:gap-4 sm:px-8"
@@ -173,7 +135,6 @@ export default function KioskView() {
               </span>
               <ArrowRight className="h-5 w-5" aria-hidden="true" />
             </Link>
-            <span className="text-sm text-ink-mute">{copy.alt}</span>
           </div>
 
           <ol className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -186,17 +147,6 @@ export default function KioskView() {
               </li>
             ))}
           </ol>
-
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-ink-line/70 pt-4 text-xs text-ink-mute">
-            <span className="inline-flex items-center gap-2">
-              <UserRound className="h-4 w-4" aria-hidden="true" />
-              {copy.privacy}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-              Decision support, not a diagnosis
-            </span>
-          </div>
         </div>
 
         <div className="lg:col-span-5">
@@ -260,101 +210,29 @@ export default function KioskView() {
             </div>
 
             <div className="mt-6 border-t border-ink-line/70 pt-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="label">{copy.queueTitle}</p>
-                <LiveIndicator status={status} />
+              <div className="flex items-start gap-3 rounded-2xl border border-teal/20 bg-teal-mist p-4">
+                <Tv className="mt-0.5 h-5 w-5 shrink-0 text-teal-deep" aria-hidden="true" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-ink">{copy.lobbyTitle}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-soft">{copy.lobbyBody}</p>
+                  <Link to="/overhead" className="btn-secondary mt-3 h-10 px-4 text-xs">
+                    {copy.lobbyCta}
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                </div>
               </div>
-
-              {stats ? (
-                <>
-                  <div className="mt-3 flex items-end gap-5">
-                    <div>
-                      <span className="numeric font-serif text-5xl font-semibold leading-none text-ink">
-                        {stats.waiting}
-                      </span>
-                      <p className="mt-1 text-2xs uppercase tracking-[0.12em] text-ink-mute">
-                        {copy.waiting}
-                      </p>
-                    </div>
-                    <div className="border-l border-ink-line/70 pl-5">
-                      <span className="numeric font-serif text-3xl font-semibold leading-none text-clay-deep">
-                        {stats.high_waiting}
-                      </span>
-                      <p className="mt-1 text-2xs uppercase tracking-[0.12em] text-ink-mute">
-                        {copy.highRisk}
-                      </p>
-                    </div>
-                    <div className="border-l border-ink-line/70 pl-5">
-                      <span className="numeric inline-flex items-baseline gap-1 font-serif text-3xl font-semibold leading-none text-ink">
-                        {waitLabel(stats.estimated_clear_minutes)}
-                      </span>
-                      <p className="mt-1 text-2xs uppercase tracking-[0.12em] text-ink-mute">
-                        est. clear
-                      </p>
-                    </div>
-                  </div>
-
-                  <ul className="mt-5 space-y-2.5">
-                    {counters.map((counter) => (
-                      <li key={counter.id} className="flex items-center gap-3 text-sm">
-                        <span className="font-mono text-2xs uppercase tracking-[0.14em] text-ink-mute">
-                          C{counter.id}
-                        </span>
-                        <span className="min-w-0 flex-1 truncate text-ink-soft">
-                          {counter.mode === 'high' ? 'Fast-track' : 'Assessment'}
-                        </span>
-                        {counter.active ? (
-                          <span className="inline-flex items-center gap-2">
-                            <span
-                              className="h-2 w-2 rounded-full"
-                              style={{ background: tierTheme(counter.active.tier).hex }}
-                              aria-hidden="true"
-                            />
-                            <span className="numeric font-semibold text-ink">{counter.active.token}</span>
-                          </span>
-                        ) : (
-                          <span className="text-2xs font-semibold uppercase tracking-[0.12em] text-moss-deep">
-                            Ready
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-ink-line/70 pt-4">
-                    <span className="inline-flex items-center gap-2 text-xs font-semibold text-teal-deep">
-                      <Clock3 className="h-4 w-4" aria-hidden="true" />
-                      {fastTrackCounter?.active ? copy.fastTrackOpen : copy.fastTrackIdle}
-                    </span>
-                    {sampleTicket && (
-                      <Link
-                        to={`/token/${sampleTicket.id}`}
-                        className="text-xs font-semibold text-teal-deep hover:underline"
-                      >
-                        Sample pass
-                      </Link>
-                    )}
-                  </div>
-                  <p className="mt-3 flex items-start gap-2 text-2xs leading-relaxed text-ink-mute">
-                    <Stethoscope className="mt-0.5 h-3.5 w-3.5 shrink-0 text-teal" aria-hidden="true" />
-                    {copy.nextUp}
-                  </p>
-                </>
-              ) : (
-                <p className="mt-3 text-sm text-ink-mute">Connecting to the lobby feed…</p>
-              )}
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 px-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <TierBadge tier="high" size="sm" />
-              <TierBadge tier="moderate" size="sm" />
-              <TierBadge tier="low" size="sm" />
-            </div>
-            <Link to="/admin" className="text-xs font-semibold text-ink-mute hover:text-teal-deep">
-              {copy.staff}
-            </Link>
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 px-1 text-xs text-ink-mute">
+            <span className="inline-flex items-center gap-2">
+              <UserRound className="h-4 w-4" aria-hidden="true" />
+              {copy.privacy}
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+              Decision support, not a diagnosis
+            </span>
           </div>
         </div>
       </main>

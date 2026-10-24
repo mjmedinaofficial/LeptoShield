@@ -326,7 +326,7 @@ export default function AdminDashboardView() {
   };
 
   return (
-    <AppShell status={status}>
+    <AppShell status={status} navMenu>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl font-semibold tracking-tight text-ink">Duty desk</h1>
@@ -697,7 +697,7 @@ export default function AdminDashboardView() {
                         REGION_STATUS_STYLES[region.status],
                       )}
                     >
-                      {region.status === 'epidemic' ? 'Breach' : region.status === 'alert' ? 'Alert' : 'Stable'}
+                      {region.status === 'epidemic' ? 'Outbreak' : region.status === 'alert' ? 'Alert' : 'Stable'}
                     </span>
                   </div>
                   <div className="mt-3 flex items-end justify-between gap-2">

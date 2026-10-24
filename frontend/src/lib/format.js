@@ -55,8 +55,33 @@ export const TIER_THEME = {
   },
 };
 
-export function tierTheme(tier) {
-  return TIER_THEME[tier] || TIER_THEME.low;
+const TIER_TEXT = {
+  fil: {
+    high: {
+      label: 'Mataas ang panganib',
+      short: 'Mataas',
+      priority: 'Priority 1 · Fast-track',
+      guidance: 'Counter 1 · pagsusuri ng doktor at prophylaxis window',
+    },
+    moderate: {
+      label: 'Katamtamang panganib',
+      short: 'Katamtaman',
+      priority: 'Priority 2 · Pagsusuri ng clinician',
+      guidance: 'Counter 2 o 3 · flexible na pagsusuri',
+    },
+    low: {
+      label: 'Mababang panganib',
+      short: 'Mababa',
+      priority: 'Priority 3 · Karaniwang pila',
+      guidance: 'Karaniwang pila · payo para sa self-monitoring',
+    },
+  },
+};
+
+export function tierTheme(tier, language = 'en') {
+  const base = TIER_THEME[tier] || TIER_THEME.low;
+  if (language !== 'fil') return base;
+  return { ...base, ...TIER_TEXT.fil[base.key] };
 }
 
 export const STATUS_THEME = {
@@ -87,8 +112,21 @@ export const STATUS_THEME = {
   },
 };
 
-export function statusTheme(status) {
-  return STATUS_THEME[status] || STATUS_THEME.waiting;
+const STATUS_TEXT = {
+  fil: {
+    waiting: { label: 'Naghihintay', description: 'Nasa pila' },
+    serving: { label: 'Nagsusuri', description: 'Nasa counter na' },
+    completed: { label: 'Tapos na', description: 'Sarado ang konsulta' },
+    referred: { label: 'Na-refer', description: 'Dinala para sa karagdagang lunas' },
+    no_show: { label: 'Hindi dumating', description: 'Hindi nagpakita' },
+  },
+};
+
+export function statusTheme(status, language = 'en') {
+  const base = STATUS_THEME[status] || STATUS_THEME.waiting;
+  if (language !== 'fil') return base;
+  const key = STATUS_THEME[status] ? status : 'waiting';
+  return { ...base, ...STATUS_TEXT.fil[key] };
 }
 
 export function formatTime(value, options = {}) {
@@ -150,11 +188,19 @@ export function clockParts(value = new Date()) {
   };
 }
 
-export function timeAgo(value, now = Date.now()) {
+export function timeAgo(value, language = 'en', now = Date.now()) {
   if (!value) return '—';
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
   const seconds = Math.max(0, Math.round((now - date.getTime()) / 1000));
+  if (language === 'fil') {
+    if (seconds < 45) return 'ngayon lang';
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return `${minutes} min ang nakalipas`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours} h ang nakalipas`;
+    return `${Math.round(hours / 24)} d ang nakalipas`;
+  }
   if (seconds < 45) return 'just now';
   const minutes = Math.round(seconds / 60);
   if (minutes < 60) return `${minutes} min ago`;
@@ -164,10 +210,10 @@ export function timeAgo(value, now = Date.now()) {
   return `${days} d ago`;
 }
 
-export function waitLabel(minutes) {
+export function waitLabel(minutes, language = 'en') {
   if (minutes === null || minutes === undefined) return '—';
   const value = Math.max(0, Math.round(minutes));
-  if (value < 1) return 'under a minute';
+  if (value < 1) return language === 'fil' ? 'wala pang isang minuto' : 'under a minute';
   if (value < 60) return `${value} min`;
   const hours = Math.floor(value / 60);
   const rest = value % 60;

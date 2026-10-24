@@ -1,3 +1,5 @@
+import { LeptoShieldWordmark } from './LeptoShieldWordmark';
+
 export function LogoMark({ className = 'h-9 w-9' }) {
   return (
     <svg viewBox="0 0 40 40" className={className} role="img" aria-label="LeptoShield">
@@ -21,10 +23,8 @@ export function Brand({ compact = false, subtitle, className = '', markClass = '
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <LogoMark className={markClass} />
-      <span className="flex flex-col leading-none">
-        <span className="font-sans text-[17px] font-bold tracking-[-0.01em] text-ink">
-          LeptoShield
-        </span>
+      <span className="flex flex-col items-start leading-none">
+        <LeptoShieldWordmark className="h-4 w-auto text-teal sm:h-5" />
         {!compact && (
           <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-mute">
             {subtitle || 'Flood-response triage'}
@@ -39,10 +39,8 @@ export function BrandOnDark({ subtitle = 'Waiting-room board' }) {
   return (
     <span className="inline-flex items-center gap-2.5">
       <LogoMark className="h-8 w-8" />
-      <span className="flex flex-col leading-none">
-        <span className="font-sans text-[16px] font-bold tracking-[-0.01em] text-night-text">
-          LeptoShield
-        </span>
+      <span className="flex flex-col items-start leading-none">
+        <LeptoShieldWordmark className="h-5 w-auto text-night-text" />
         <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-night-mute">
           {subtitle}
         </span>

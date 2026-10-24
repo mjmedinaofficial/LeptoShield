@@ -9,6 +9,7 @@ import TokenPassView from './components/TokenPassView';
 import OverheadBoardView from './components/OverheadBoardView';
 import AdminDashboardView from './components/AdminDashboardView';
 import { AppShell } from './components/AppShell';
+import { LanguageProvider, useLanguage } from './components/LanguageToggle';
 import { EmptyState } from './components/Primitives';
 
 function ScrollToTop() {
@@ -19,15 +20,30 @@ function ScrollToTop() {
   return null;
 }
 
+const NOT_FOUND_COPY = {
+  en: {
+    title: 'That screen does not exist',
+    message: 'The route you followed is not part of the LeptoShield prototype.',
+    action: 'Back to overview',
+  },
+  fil: {
+    title: 'Wala ang screen na iyon',
+    message: 'Ang link na sinundan mo ay hindi bahagi ng LeptoShield prototype.',
+    action: 'Bumalik sa pangkalahatan',
+  },
+};
+
 function NotFoundView() {
+  const { language } = useLanguage();
+  const copy = NOT_FOUND_COPY[language] ?? NOT_FOUND_COPY.en;
   return (
     <AppShell>
       <EmptyState
-        title="That screen does not exist"
-        message="The route you followed is not part of the LeptoShield prototype."
+        title={copy.title}
+        message={copy.message}
         action={
           <Link to="/" className="btn-primary">
-            Back to overview
+            {copy.action}
           </Link>
         }
       />
@@ -75,19 +91,21 @@ export default function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        <ScrollToTop />
-        <a className="skip-link" href="#main">
-          Skip to content
-        </a>
-        <Routes>
-          <Route path="/" element={<HubView />} />
-          <Route path="/kiosk" element={<KioskView />} />
-          <Route path="/triage" element={<PatientTriageView />} />
-          <Route path="/token/:id" element={<TokenPassView />} />
-          <Route path="/overhead" element={<OverheadBoardView />} />
-          <Route path="/admin" element={<AdminDashboardView />} />
-          <Route path="*" element={<NotFoundView />} />
-        </Routes>
+        <LanguageProvider>
+          <ScrollToTop />
+          <a className="skip-link" href="#main">
+            Skip to content
+          </a>
+          <Routes>
+            <Route path="/" element={<HubView />} />
+            <Route path="/kiosk" element={<KioskView />} />
+            <Route path="/triage" element={<PatientTriageView />} />
+            <Route path="/token/:id" element={<TokenPassView />} />
+            <Route path="/overhead" element={<OverheadBoardView />} />
+            <Route path="/admin" element={<AdminDashboardView />} />
+            <Route path="*" element={<NotFoundView />} />
+          </Routes>
+        </LanguageProvider>
       </BrowserRouter>
     </ErrorBoundary>
   );
