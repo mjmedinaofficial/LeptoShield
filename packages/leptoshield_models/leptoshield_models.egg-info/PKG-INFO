@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: leptoshield-models
+Version: 0.1.0
+Summary: Canonical framework-independent SQLAlchemy 2.0 models for LeptoShield
+Author: LeptoShield Architecture Team
+Requires-Python: >=3.11
+Requires-Dist: sqlalchemy>=2.0
