@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import { AppShell } from './AppShell';
+import { LeptoShieldWordmark } from './LeptoShieldWordmark';
 import {
   EmptyState,
   LiveIndicator,
@@ -23,7 +24,6 @@ import {
   SectionTitle,
   Sparkline,
   ThresholdBar,
-  TierBadge,
 } from './Primitives';
 import { useLiveQueue } from '../hooks/useLiveQueue';
 import { getSurveillance } from '../services/api';
@@ -97,30 +97,31 @@ export default function HubView() {
   }, []);
 
   const counters = snapshot?.counters ?? [];
-  const waiting = snapshot?.waiting ?? [];
   const stats = snapshot?.stats;
   const alerts = snapshot?.alerts ?? [];
   const inventory = snapshot?.inventory;
   const regions = surveillance?.regions ?? [];
   const weather = surveillance?.weather ?? snapshot?.surveillance?.weather;
   const surge = surveillance?.surge ?? snapshot?.surge;
-  const sampleTicket = waiting.find((ticket) => ticket.tier === 'high') ?? waiting[0];
   const criticalAlert = alerts.find((alert) => alert.level === 'critical');
 
   const surfaceStats = {
     kiosk: snapshot ? 'Ready for the lobby' : 'Loading',
     intake: stats ? `${stats.waiting} in line now` : 'Loading',
-    board: counters.length ? `${counters.filter((c) => c.status === 'serving').length}/${counters.length} counters active` : 'Loading',
+    board: counters.length
+      ? `${counters.filter((c) => c.status === 'serving').length}/${counters.length} counters active`
+      : 'Loading',
     admin: inventory ? `${inventory.stock} capsules on hand` : 'Loading',
   };
 
   return (
-    <AppShell status={status}>
+    <AppShell status={status} kioskLink={false} footerLinks={false}>
       <section className="relative overflow-hidden rounded-3xl border border-ink-line/80 bg-surface shadow-card">
         <div className="topo pointer-events-none absolute inset-0 opacity-70" aria-hidden="true" />
         <div className="relative grid gap-10 px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-12 lg:gap-12 lg:py-14">
           <div className="lg:col-span-7">
-            <h1 className="font-serif text-[40px] font-semibold leading-[1.03] tracking-[-0.02em] text-ink sm:text-[54px] lg:text-[60px]">
+            <LeptoShieldWordmark className="h-8 w-auto text-teal lg:h-10" />
+            <h1 className="mt-5 font-serif text-[40px] font-semibold leading-[1.03] tracking-[-0.02em] text-ink sm:text-[54px] lg:text-[60px]">
               Triage first.
               <br />
               Treat in time.
@@ -140,15 +141,6 @@ export default function HubView() {
               <Link to="/admin" className="btn-secondary h-12 px-5 text-[15px]">
                 Staff duty desk
               </Link>
-              {sampleTicket && (
-                <Link
-                  to={`/token/${sampleTicket.id}`}
-                  className="inline-flex h-12 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-teal-deep hover:bg-teal-mist"
-                >
-                  See a live patient pass
-                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              )}
             </div>
 
             <dl className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-ink-line/70 pt-4 text-xs text-ink-mute">
@@ -171,7 +163,10 @@ export default function HubView() {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="relative overflow-hidden rounded-2xl border border-night-line bg-night p-5 text-night-text shadow-night">
+            <Link
+              to="/overhead"
+              className="group relative block overflow-hidden rounded-2xl border border-night-line bg-night p-5 text-night-text shadow-night transition-colors hover:border-teal/50"
+            >
               <div className="flex items-center justify-between gap-3">
                 <p className="font-mono text-2xs uppercase tracking-[0.18em] text-night-mute">
                   Lobby right now
@@ -227,10 +222,17 @@ export default function HubView() {
 
               <div className="mt-5 waterline h-1 w-full rounded-full" aria-hidden="true" />
               <p className="mt-3 text-2xs leading-relaxed text-night-mute">
-                Every screen reads the same queue. A call at the duty desk changes the lobby board
-                and the patient's phone in the same second.
+                Every screen reads the same queue. A call at the duty desk changes the lobby board and
+                the patient's phone in the same second.
               </p>
-            </div>
+              <span className="mt-3 inline-flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.12em] text-night-mute transition-colors group-hover:text-night-text">
+                Open the waiting-room board
+                <ChevronRight
+                  className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </span>
+            </Link>
 
             {criticalAlert && (
               <div className="mt-4 flex items-start gap-3 rounded-2xl border border-clay/25 bg-clay-mist p-4">
@@ -262,19 +264,25 @@ export default function HubView() {
 
       <section className="mt-12">
         <SectionTitle meta="about three minutes end to end">How a patient moves through LeptoShield</SectionTitle>
-        <ol className="mt-6 grid gap-px overflow-hidden rounded-2xl border border-ink-line/80 bg-ink-line/70 sm:grid-cols-3">
-          {STEPS.map((step, index) => (
-            <li key={step.title} className="bg-surface p-6">
-              <span className="font-serif text-3xl font-semibold text-teal-deep/70">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <h3 className="mt-4 font-sans text-base font-bold tracking-tight text-ink">{step.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-soft">{step.copy}</p>
-              <p className="mt-4 font-mono text-2xs uppercase tracking-[0.12em] text-ink-mute">{step.meta}</p>
-            </li>
-          ))}
-        </ol>
-        <div className="mt-0 h-1 w-full rounded-b-full waterline" aria-hidden="true" />
+        <div className="mt-6 overflow-hidden rounded-2xl border border-ink-line/80 bg-ink-line/70">
+          <ol className="grid gap-px sm:grid-cols-3">
+            {STEPS.map((step, index) => (
+              <li key={step.title} className="bg-surface p-6">
+                <span className="font-serif text-3xl font-semibold text-teal-deep/70">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-4 font-sans text-base font-bold tracking-tight text-ink">
+                  {step.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{step.copy}</p>
+                <p className="mt-4 font-mono text-2xs uppercase tracking-[0.12em] text-ink-mute">
+                  {step.meta}
+                </p>
+              </li>
+            ))}
+          </ol>
+          <div className="waterline h-1 w-full" aria-hidden="true" />
+        </div>
       </section>
 
       <section className="mt-12 grid gap-8 lg:grid-cols-12">
@@ -336,7 +344,7 @@ export default function HubView() {
                         statusStyles,
                       )}
                     >
-                      {region.status === 'epidemic' ? 'Breach' : region.status === 'alert' ? 'Alert' : 'Stable'}
+                      {region.status === 'epidemic' ? 'Outbreak' : region.status === 'alert' ? 'Alert' : 'Stable'}
                     </span>
                   </div>
                 </li>
@@ -411,7 +419,9 @@ export default function HubView() {
             <div className="mt-4 flex items-center justify-between text-xs text-ink-mute">
               <span>reorder at {inventory?.reorder_threshold ?? 500}</span>
               <span>
-                {inventory?.days_remaining ? `≈ ${inventory.days_remaining} days cover` : 'projection pending'}
+                {inventory?.days_remaining
+                  ? `≈ ${inventory.days_remaining} days cover`
+                  : 'projection pending'}
               </span>
             </div>
             <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-ink/[0.07]">
@@ -459,55 +469,67 @@ export default function HubView() {
         </div>
       </section>
 
-      <section className="mt-12 grid gap-6 lg:grid-cols-12">
-        <div className="panel p-6 lg:col-span-8">
+      <section className="mt-12">
+        <div className="panel p-6">
           <div className="flex items-start gap-4">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-mist text-teal-deep">
               <Stethoscope className="h-5 w-5" aria-hidden="true" />
             </span>
-            <div>
+            <div className="min-w-0">
               <h2 className="font-serif text-lg font-semibold text-ink">
-                What the score is, and what it is not
+                Risk Score: What the score is, and what it is not
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                The risk score is a transparent rule set, not a trained diagnostic model. Each factor
-                carries a published weight — exposure type, contact time over two hours, open cuts,
-                fever, calf tenderness, conjunctival suffusion, and vulnerability — so a clinician can
-                audit exactly why a patient was fast-tracked. It never replaces examination.
+                The risk score is a transparent rule set and is not a trained diagnostic model. Each
+                factor carries a published weight that is determined by exposure type, contact time
+                over two hours, open cuts, fever, calf tenderness, conjunctival suffusion, and
+                vulnerability.
               </p>
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <TierBadge tier="high" />
-                <TierBadge tier="moderate" />
-                <TierBadge tier="low" />
-                <span className="text-2xs text-ink-mute">
-                  H / M / L tokens · Counter 1 reserved for high risk
+              <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+                Through the risk score clinician can audit exactly why a patient was fast-tracked,
+                but this process never replaces examination.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex items-start gap-4 border-t border-ink-line/70 pt-5">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-mist text-teal-deep">
+              <Gauge className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="label">Engine contract</p>
+              <ul className="mt-3 space-y-2 text-sm text-ink-soft">
+                <li className="flex items-start gap-2">
+                  <Droplets className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
+                  Scores clamp to 0.0–1.0; high starts at 0.60.
+                </li>
+                <li className="flex items-start gap-2">
+                  <Activity className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
+                  Wait ageing keeps long waits visible inside a tier.
+                </li>
+                <li className="flex items-start gap-2">
+                  <Siren className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
+                  A high-risk patient waiting 30 seconds can preempt a lower-tier consult, and that
+                  event is logged.
+                </li>
+              </ul>
+
+              <p className="mt-4 text-2xs text-ink-mute">
+                Example: flood immersion with fever and muscle pain scores 0.78 — fast-track.
+              </p>
+              <div className="mt-2 flex items-center gap-3">
+                <RiskMeter
+                  score={0.78}
+                  tier="high"
+                  showTicks={false}
+                  compact
+                  className="min-w-0 flex-1"
+                />
+                <span className="numeric shrink-0 rounded-full border border-clay/25 bg-clay-soft px-2.5 py-1 text-2xs font-semibold text-clay-deep">
+                  0.78
                 </span>
               </div>
             </div>
-          </div>
-        </div>
-        <div className="panel p-6 lg:col-span-4">
-          <p className="label">Engine contract</p>
-          <ul className="mt-3 space-y-2 text-sm text-ink-soft">
-            <li className="flex items-start gap-2">
-              <Droplets className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
-              Scores clamp to 0.0–1.0; high starts at 0.60.
-            </li>
-            <li className="flex items-start gap-2">
-              <Activity className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
-              Wait ageing keeps long waits visible inside a tier.
-            </li>
-            <li className="flex items-start gap-2">
-              <Siren className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
-              A high-risk patient waiting 30 seconds can preempt a lower-tier consult, and that event
-              is logged.
-            </li>
-          </ul>
-          <div className="mt-4">
-            <RiskMeter score={0.78} tier="high" showTicks={false} compact />
-            <p className="mt-2 text-2xs text-ink-mute">
-              Example: flood immersion with fever and muscle pain scores 0.78 — fast-track.
-            </p>
           </div>
         </div>
       </section>

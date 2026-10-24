@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 
 import { BrandOnDark } from './Brand';
+import { NavMenu } from './NavMenu';
 import { LiveIndicator, ManilaClock, TierIcon } from './Primitives';
 import { useLiveQueue } from '../hooks/useLiveQueue';
 import { classNames, manilaLongDate, tierTheme, waitLabel } from '../lib/format';
@@ -148,6 +149,7 @@ export default function OverheadBoardView() {
             >
               {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </button>
+            <NavMenu tone="dark" />
           </div>
         </div>
       </header>
@@ -292,8 +294,7 @@ export default function OverheadBoardView() {
               risk keep their place and their wait credit even if a high-risk patient arrives later.
             </p>
             <p className="mt-3 text-2xs leading-relaxed text-night-mute">
-              If you cannot hear your token, tell any clinic staff member. Prototype with synthetic
-              data.
+              If you cannot hear your token, tell any clinic staff member.
             </p>
             <Link
               to="/admin"
